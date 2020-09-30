@@ -3,7 +3,7 @@
 ## Econometrics
 
 ### Fix and random effects
-* https://www.cambridge.org/core/services/aop-cambridge-core/content/view/0334A27557D15848549120FE8ECD8D63/S2049847014000077a.pdf/explaining_fixed_effects_random_effects_modeling_of_timeseries_crosssectional_and_panel_data.pdf
+* https://www.cambridge.org/core/journals/political-science-research-and-methods/article/explaining-fixed-effects-random-effects-modeling-of-timeseries-crosssectional-and-panel-data/0334A27557D15848549120FE8ECD8D63
 
 ## Basic Coding
 
