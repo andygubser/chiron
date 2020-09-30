@@ -1,4 +1,6 @@
-# Data Science Tutorials
+# Tutorial Pipline
+
+**Following tutorials are not checked yet by the author**
 
 MUST READ ARTICLES FOR DATA SCIENCE ENTHUSIAST.
 ==============================================
