@@ -3,7 +3,7 @@
 ## Programming / Coding
 
 * Basic R Programming: https://www.udemy.com/course/r-programming/learn/
-* BasicPython Programming: https://www.udemy.com/course/python-coding/learn/
+* Basic Python Programming: https://www.udemy.com/course/python-coding/learn/
 * *https://www.udemy.com/course/pythonforbeginnersintro/learn/*
 * *https://www.udemy.com/course/python-bootcamp/learn/*
 * *https://www.udemy.com/course/complete-python-bootcamp/learn/*
@@ -32,7 +32,7 @@
 ## Machine Learning and Deep Learning
 
 * Machine Learning with Kiril Eremenko: https://www.udemy.com/course/machinelearning/learn/
-* Deep Learning with Andrew Yang: https://youtu.be/CS4cs9xVecg
+* Deep Learning with Andrew Yang (highly recommended!!!): https://youtu.be/CS4cs9xVecg
 * *https://www.udemy.com/course/deeplearning/learn/*
 * *https://www.udemy.com/course/artificial-intelligence-az/learn/*
 * *https://www.udemy.com/course/python-for-data-science-and-machine-learning-bootcamp/learn/*
