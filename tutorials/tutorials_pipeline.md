@@ -1,4 +1,4 @@
-# Tutorial Pipline
+# Tutorial Pipeline
 
 **Following tutorials are not checked yet by the author**
 
