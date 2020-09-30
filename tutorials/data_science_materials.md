@@ -10,10 +10,10 @@
 
 ## Data Analysis
 
-* Data Analysis in R: https://www.udemy.com/course/r-analytics/learn/
-* Data Analysis in SQL: *https://www.udemy.com/course/the-ultimate-mysql-bootcamp-go-from-sql-beginner-to-expert/learn/*
-* *Data Analysis in Python: https://learn.datacamp.com/career-tracks/data-scientist-with-python*
-* *Data Analysis in Tableau: https://www.udemy.com/course/tableau-for-beginners/learn/*
+* Data Analysis using R: https://www.udemy.com/course/r-analytics/learn/
+* Data Analysis using SQL: *https://www.udemy.com/course/the-ultimate-mysql-bootcamp-go-from-sql-beginner-to-expert/learn/*
+* *Data Analysis using Python: https://learn.datacamp.com/career-tracks/data-scientist-with-python*
+* *Data Analysis using Tableau: https://www.udemy.com/course/tableau-for-beginners/learn/*
 * *Data Science for Beginners: https://www.udemy.com/course/datascience/learn/*
 * *Data Science for all levels: https://www.udemy.com/course/the-data-science-course-complete-data-science-bootcamp/learn/*
 * *Use Cases with Kirll Eremenko: https://www.udemy.com/course/ai-for-business/learn/*
@@ -21,9 +21,9 @@
 
 ### Time Series Analysis
 
-* Intuition (with Gretl): https://www.youtube.com/watch?v=VTc9Ioy9bkQ&list=PLOJG4jCHHSIPFbiTPF_jpfs0AMr_mVDpu&index=7&t=0s
-* *Intuition 2 (with Gretl): https://www.youtube.com/watch?v=s0utCyinbA0&t=0s&amp;list=PLOJG4jCHHSIPFbiTPF_jpfs0AMr_mVDpu&index=8*
-* *Time Series Analysis in Python: https://www.udemy.com/course/python-for-time-series-data-analysis/learn/*
+* Intuition (using Gretl): https://www.youtube.com/watch?v=VTc9Ioy9bkQ&list=PLOJG4jCHHSIPFbiTPF_jpfs0AMr_mVDpu&index=7&t=0s
+* *Intuition 2 (using Gretl): https://www.youtube.com/watch?v=s0utCyinbA0&t=0s&amp;list=PLOJG4jCHHSIPFbiTPF_jpfs0AMr_mVDpu&index=8*
+* *Time Series Analysis using Python: https://www.udemy.com/course/python-for-time-series-data-analysis/learn/*
 
 ### Panel Data Analysis
 
