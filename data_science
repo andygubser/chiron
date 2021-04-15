@@ -1,0 +1,32 @@
+Data Science Journey
+
+ETL
+
+Extract
+
+Transform
+Incorrect data, corrupt data, missing data
+
+Outlier detection and handling
+- detect by distribution curve or other plots
+- replace by mean or median values, introduce a dummy variable wheater data is missing or not
+
+Convert values
+- default date format: yyyy-mm-dd
+- default currency: xx.xx MU
+
+Load to database / datawarehose
+- check number of rows (top & bottom)
+- check value types (dates and currencies)
+- check text values
+
+
+Analysis
+- regression
+- classification (eg. decision tree/random forest, K-Nearest Neighbor, Naive Bayes, log regression)
+- clustering (eg. kmeans, hierarchical clustering)
+- reinforment learning (exploration & explotation, eg. multi-armed bandit problem, upper-confidence bound algorithm UCB, Thompson sampling)
+- neural networks and deep learning
+
+
+
