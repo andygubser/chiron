@@ -1,4 +1,4 @@
-# Data Science Chiron
+# Collection of recommended Data Science Tutorials
 
 ## Introduction to Machine Learning
 * Making Friends with Machine Learning (Cassie Kozyrkov)
@@ -32,6 +32,8 @@
     - https://www.superdatascience.com/home
     - https://www.datacamp.com/community/data-science-cheatsheets
 
+## Bootcamps
+* [Propulsion Academy](https://propulsion.academy/)
 
 * Sources to check 
     - *Data Analysis using SQL: *https://www.udemy.com/course/the-ultimate-mysql-bootcamp-go-from-sql-beginner-to-expert/learn/*
