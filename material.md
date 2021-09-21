@@ -14,12 +14,16 @@
 * Python
     - Basic Programming in Python: [Kyrill Eremenko](https://www.udemy.com/course/python-coding/learn/)
     - Data Analysis using Python: https://learn.datacamp.com/career-tracks/data-scientist-with-python*
-
     - Software Development and Data Science: [Jannis Seemann](https://www.udemy.com/course/python-bootcamp/learn)
     - Software Development: [Jose Portilla](https://www.udemy.com/course/complete-python-bootcamp/learn)
+
+* SQL
+    - [SQL for Data Science](https://pub.towardsai.net/a-complete-guide-to-sql-for-data-science-35743e73fd?_branch_match_id=968866952971094218&utm_source=pocket_mylist&gi=856b96b187fd)
+
 * Machine Learning and Deep Learning
     - [Machine Learning with Kiril Eremenko](https://www.udemy.com/course/machinelearning/learn/)
     - [Deep Learning with Andrew Yang](https://youtu.be/CS4cs9xVecg)
+
 
 * Time Series Analysis
     - Intuition (using Gretl): 
