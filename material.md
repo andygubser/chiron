@@ -1,5 +1,9 @@
 # Collection of recommended Data Science Tutorials
 
+## Statistics
+* [An Introduction to Statistical Learning](https://www.statlearning.com/)
+* [The Elements of Statistical Learning](https://hastie.su.domains/ElemStatLearn/)
+
 ## Introduction to Machine Learning
 * Making Friends with Machine Learning (Cassie Kozyrkov)
     - [1/3 Intro to ML](https://www.youtube.com/watch?v=0Vjh3pNP1GY&list=PLRKtJ4IpxJpDxl0NTvNYQWKCYzHNuy2xG&index=3)
