@@ -1,0 +1,438 @@
+---
+title: "Applied Machine Learning and Predictive Modelling 1 - Group Work"
+author: "Ana Nicolasa Caduff, Yarkin Göcmen, Andy Gubser and Alexandra Strohmeier (Group ID 4)"
+date: \today
+
+output: 
+  html_document:
+    theme: flatly
+    toc: true
+    toc_depth: 5
+    toc_float: 
+      collapsed: true
+      smooth_scroll: true
+    number_sections: true
+    df_print: paged
+---
+
+<!-- .A Justification provides an explanation for applied operations. -->
+<!-- .B Interpretation provides arguments for the code outcome and analysis results, including partial results. -->
+
+# Preparation
+
+## Load libraries and read data
+```{r, results='hide'}
+# install and load packages
+list.of.packages <- c("plyr", "ggplot2", "tidyverse", "dplyr", "e1071", "randomForest", "tree", "caret", "neuralnet")
+install.and.load.package <- function(package){
+  if (!require(package, character.only = TRUE)) install.packages(package, character.only=TRUE)
+  library(package, character.only = TRUE, warn.conflicts = FALSE)
+}
+lapply(list.of.packages, install.and.load.package)
+
+# read data
+read_csv_filename <- function(filename){
+    d <- read.csv(filename)
+
+    d[,"fuel"] <- substring(filename, 
+                gregexpr("_", filename)[[1]][1] +1, 
+                gregexpr("_", filename)[[1]][2] -1
+                )
+    
+    d[,"provider"] <- substring(filename,
+                gregexpr("/", filename)[[1]][2] +1, 
+                gregexpr("_", filename)[[1]][1] -1
+                )
+    
+    d[,"year"] <- as.numeric(substring(filename, 
+                  gregexpr("2", filename)[[1]][1], 
+                  gregexpr(".csv", filename)[[1]][1] -1
+                  ))
+    d
+}
+```
+
+```{r}
+mydir = "./dutch-energy/"
+myfiles = list.files(path=mydir, pattern="*.csv", recursive=TRUE, full.names=TRUE)
+
+myfiles
+length(myfiles)
+df <- ldply(myfiles, read_csv_filename)
+```
+
+The user function extracts fuel (energy source), provider and year substrings from the filenames and reads csv files into R. The function is executed over all 64 files within the dutch energy folder. 
+
+
+## Describe Data
+```{r}
+head(df)
+str(df)
+dim(df)
+names(df)
+nrow(df %>% filter(fuel=='gas'))
+nrow(df %>% filter(fuel=='electricity'))
+```
+
+All datasets in folder Electricity and Gas have the same 14 column names. The datasets in folder Electricity have 3,565,793 observations, whereas the datasets in folder Gas have 3,085,757 observations.
+
+
+# Part 1 #######################################
+
+## Explore relationship between smart meter pct and total consumption of electricity
+```{r}
+for (j in seq(2009,2019,1)){
+print(ggplot(data=df%>% filter(fuel=='electricity',year==j) , aes(x=smartmeter_perc, y=annual_consume)) + geom_point(shape=1,color='seagreen3') + labs(x='smart meter percentage',y='consumption',title = paste('Year = ',j ))+geom_smooth())
+}
+```
+
+The variable electricity consumption is plotted against smart meter percentage for each year between 2009 to 2019. The blue line corresponds to the smoothed conditional mean. 
+
+There is an unclear relationship between smart meter percentages and electricity consumption. The smoothed mean is increasing for small smart meter percentages, but then it reaches a maximal electricity consumption level and decreases again. This can be observed for each year. 
+
+## Explore relationship between ratio of low_tarif electricity consumption and total consumption electricity
+```{r}
+for (j in seq(2009,2019,1)){
+print(ggplot(data=df%>% filter(fuel=='electricity',year==j) , aes(x=annual_consume_lowtarif_perc, y=annual_consume)) + 
+    labs(x='low tariff electricity',y='consumption',title=paste('Year = ',j))+ geom_point(shape=1, color="aquamarine2") + geom_smooth())}
+```
+
+The variable electricity consumption is plotted against low tariff electricity percentage for each year between 2009 and 2019. The blue line corresponds to the smoothed conditional mean. 
+
+There is an unclear relationship between smart meter percentages and electricity consumption. The smoothed mean is slightly increasing until a maximal electricity consumption level and then decreases slightly. This can be observed for each year. 
+
+
+<!-- We can observe from the yearly plots above that the consumption increases with increase in percentage of low tariff electricity use. This is justified since cheaper form of electricity is much more liable to be used compared to the normal form of slightly expensive electricity.  -->
+
+## Analysis with LM, SVM and NN
+All the analysis should be run initially with a
+
+ 01. linear model and
+ 
+ 02. then with SVM (with one or more of the kernel known) and  
+ 03. with a neural network (NN), 
+ 
+to find the best model family, with respect to the following metrics:  
+
+  A) the test error,  
+  
+  B) the ratio test/train error and  
+  
+  C) the R-squared.
+ 
+### Data Preperation
+Unfortunately, running the code with training set 70% and test set 30% does not work efficiently for the SVM and NN methods. Therefore, we created a train ratio of 30% only. 
+
+```{r}
+# Create train and test set
+data_electricity=df%>% filter(fuel=='electricity')
+set.seed(4) 
+train_ratio=0.3
+indices=sample(nrow(data_electricity))
+train_index=indices[1:(round(train_ratio*length(indices)))]
+test_index=indices[(round(train_ratio*length(indices))+1):length(indices)]
+train_data=data_electricity[train_index,]
+test_data=data_electricity[test_index,]
+
+# define variables
+resp <- train_data$annual_consume
+pred_smartmeter <- train_data$smartmeter_perc
+pred_lowtarif<-train_data$annual_consume_lowtarif_perc
+```
+
+The data is split into training and test set. The response variable is annual_consume. The predictors are smartmeter_perc and annual_consume_lowtarif_perc.
+
+### Linear model
+```{r}
+model_smartmeter =lm(resp ~ pred_smartmeter)
+summary(model_smartmeter)
+predicted_test<-predict(object=model_smartmeter,newdata=data.frame('pred_smartmeter'=test_data$smartmeter_perc))
+
+test_error=sqrt(mean((predicted_test-test_data$annual_consume)^2))
+train_error=sqrt(mean((model_smartmeter$fitted.values-train_data$annual_consume)^2))
+print(paste('Test Error using smart meter percentage is ',round(test_error,2)))
+print(paste('Ratio of Test to Training Error using smart meter percentage is ',round(test_error/train_error,4)))
+
+
+model_lowtarif =lm(resp ~ pred_lowtarif)
+summary(model_lowtarif)
+predicted_test<-predict(object=model_lowtarif,newdata=data.frame('pred_lowtarif'=test_data$annual_consume_lowtarif_perc))
+
+test_error=sqrt(mean((predicted_test-test_data$annual_consume)^2))
+train_error=sqrt(mean((model_lowtarif$fitted.values-train_data$annual_consume)^2))
+print(paste('Test Error using annual consume lowtarif percentage is',round(test_error,2)))
+print(paste('Ratio of Test to Training Error using annual consume lowtarif percentage is',round(test_error/train_error,4)))
+```
+
+A) test error using smart meter percentage is 3586.59, test error using smartannual consume lowtarif percentage is 3578.57
+
+B) ratio of test to train error using smart meter percentage is 0.9992, the ratio using annual consume lowtarif percentage is 0.9994
+
+C) R-squared using smart meter percentage R-squared: 0.001944 using annual consume lowtarif percentage R-squared: 0.006768
+
+Two linear regression models are built on the training data. One model has smart meter percentage as the predictor while the other has low tariff electricity percentage as the predictor. The dependent variable is electricity consumption. The electricity data is split into training and test data with the training data containing 30% of the overall data while the test data containing 70% of the overall data. The models are built on the training data and are tested on the test data. Further, the test error, the training error, the R-squared and the ratio of test error to the training error are calculated as evaluation metrics.
+
+The model with smart meter percentage as the predictor has an R-squared of 0.19% while that with low tariff electricity has an R-squared of 0.66%. Although the variables are not able to explain the variance of electricity consumption very well, yet they are highly significant. 
+Smart meter percentage has a p-value of nearly zero. Its coefficient is -5.36 which implies that with a unit increase in smart meter percentage, the consumption of electricity decreases by 5.3 units. This is in line with the interpretation of the plots where a negative relationship could be observed from smart-meter percentage. The training to test error ratio is approximately one which implies that the fit on the training set generalizes well on the test data.
+Low tariff electricity percentage has a p-value of almost zero. Its coefficient is 9.607 which implies that with a unit increase in low tariff electricity percentage, the consumption of electricity increases by 9.6 units. This is in line with the interpretation of plots where a positive relationship between consumption of electricity and low tariff electricity percentage were noticed. The training to test error ratio is approximately one which implies that the fit on the training set generalizes well on the test data.
+
+### SVM
+A) using 5000 in new_training_length
+
+This code takes about 5 minutes to run.
+```{r}
+new_training_length=5000
+data_svm=data.frame('resp'=resp[1:new_training_length] ,'pred'= pred_smartmeter[1:new_training_length])
+svm_model =svm(resp~pred,data = data_svm,  kernel ="radial",scale=T, cost =0.1 )
+
+summary(svm_model)
+predicted_test_svm<-predict(svm_model,new_data=data.frame('pred'=test_data$smartmeter_perc[1:new_training_length]))
+
+test_error_svm=sqrt(mean((predicted_test_svm[1:new_training_length]-test_data$annual_consume[1:new_training_length])^2))
+train_error_svm=sqrt(mean((fitted(svm_model)-train_data$annual_consume[1:new_training_length])^2))
+print(paste('Test Error using smart meter percentage is',round(test_error_svm,2)))
+print(paste('Ratio of Test to Training Error using smart meter percentage is',round(test_error_svm/train_error_svm,4)))
+
+
+svm_model_lt =svm(resp[1:new_training_length] ~ pred_lowtarif[1:new_training_length],  kernel ="linear", cost =1 )
+
+summary(svm_model_lt)
+predicted_test_svm<-predict(svm_model_lt,new_data=data.frame('pred_lowtarif'=test_data$pred_lowtarif[1:new_training_length]))
+
+test_error_svm=sqrt(mean((predicted_test_svm-test_data$annual_consume[1:new_training_length])^2))
+train_error_svm=sqrt(mean((fitted(svm_model_lt)-train_data$annual_consume[1:new_training_length])^2))
+print(paste('Test Error using annual consume lowtarif percentage',round(test_error_svm,2)))
+print(paste('Ratio of Test to Training Error using annual consume lowtarif percentage is',round(test_error_svm/train_error_svm,4)))
+```
+
+B) using 100'000 in new_training_length_B
+This code takes about 80 minutes to run.
+```{r}
+new_training_length_B = 100000
+data_svm=data.frame('resp'=resp[1:new_training_length_B] ,'pred'= pred_smartmeter[1:new_training_length_B])
+svm_model =svm(resp~pred,data = data_svm,  kernel ="radial",scale=T, cost =0.1 )
+
+summary(svm_model)
+predicted_test_svm<-predict(svm_model,new_data=data.frame('pred'=test_data$smartmeter_perc[1:new_training_length_B]))
+
+test_error_svm=sqrt(mean((predicted_test_svm[1:new_training_length_B]-test_data$annual_consume[1:new_training_length_B])^2))
+train_error_svm=sqrt(mean((fitted(svm_model)-train_data$annual_consume[1:new_training_length_B])^2))
+print(paste('Test Error using smart meter percentage is',round(test_error_svm,2)))
+print(paste('Ratio of Test to Training Error using smart meter percentage is',round(test_error_svm/train_error_svm,4)))
+
+
+svm_model_lt =svm(resp[1:new_training_length_B] ~ pred_lowtarif[1:new_training_length_B],  kernel ="linear", cost =1 )
+
+summary(svm_model_lt)
+predicted_test_svm<-predict(svm_model_lt,new_data=data.frame('pred_lowtarif'=test_data$pred_lowtarif[1:new_training_length_B]))
+
+test_error_svm=sqrt(mean((predicted_test_svm-test_data$annual_consume[1:new_training_length_B])^2))
+train_error_svm=sqrt(mean((fitted(svm_model_lt)-train_data$annual_consume[1:new_training_length_B])^2))
+print(paste('Test Error using annual consume lowtarif percentage',round(test_error_svm,2)))
+print(paste('Ratio of Test to Training Error using annual consume lowtarif percentage is',round(test_error_svm/train_error_svm,4)))
+```
+
+
+An SVM model with linear kernel and cost of constraint violation equals 1 is fit to the training data. The dependent variable is electricity consumption and the independent variable is smart meter percentage for one model and low tariff electricity percentage for the other model.
+
+SVM is a model based on margin classification in which each observation is put at one of the sides of boundary by evaluating their signs with respect to the decision boundary. It does not converge in this case because the dataset is extremely large. The data set was reduced to five thousand and 100'000 entries each in the training data and the test data so that the algorithm could converge in small duration. Although this led to the convergence of the model, however, the test error to training error came out to be less than 1. Since the training and test data were very small, both models won't be used any further as the final model.
+
+using 5'000 in new_training_length took about 5 minutes to run.
+Number of Support Vectors:  3'967, using smart meter percentage
+
+using 100'000 in new_training_length_B took about 80 minutes to run.
+Number of Support Vectors:  78'949, using smart meter percentage
+
+A) test error 
+using 5000 in new_training_length and using smart meter percentage is 3992.38
+
+using 5000 in new_training_length and using annual consume lowtarif percentage 3994.72
+
+using 100'000 in new_training_length and using smart meter percentage is 3729.82
+
+using 100'000 in new_training_length and using annual consume lowtarif percentage is 3734.19
+
+B) ratio of test to train error
+using 5000 in new_training_length and using smart meter percentage is 1.0785
+
+using 5000 in new_training_length and using annual consume lowtarif percentage is 1.0777
+
+using 100'000 in new_training_length and using smart meter percentage is 1.0147
+
+using 100'000 in new_training_length and using annual consume lowtarif percentage is 1.0142
+
+### Neural Network
+```{r}
+new_training_length = 500
+mean_resp = mean(resp[1:new_training_length])
+sd_resp = sd(resp[1:new_training_length])
+mean_sm = mean(pred_smartmeter[1:new_training_length])
+sd_sm = sd(pred_smartmeter[1:new_training_length])
+data_nn = data.frame('resp'=scale(resp[1:new_training_length]) ,'pred'= scale(pred_smartmeter[1:new_training_length]))
+NN = neuralnet(resp~pred,data = data_nn, hidden = 2 , linear.output = T )
+plot(NN)
+
+# new data
+new_data = data.frame('pred_smartmeter'=(test_data$smartmeter_perc[1:new_training_length]-mean_sm)/sd_sm)
+
+predict_testNN = compute(NN, new_data)
+predict_testNN$net.result = predict_testNN$net.result*sd_resp+mean_resp
+test_error = sqrt(mean((predict_testNN$net.result-test_data$annual_consume[1:new_training_length])^2))
+
+# data_nn
+predict_trainNN = compute(NN,data_nn)
+predict_trainNN$net.result = predict_trainNN$net.result*sd_resp+mean_resp
+train_error = sqrt(mean((predict_trainNN$net.result-(data_nn$resp*sd_sm+mean_sm))^2))
+print('the ratio of training to test data is ' )
+print(test_error/train_error)
+
+mean_lt = mean(pred_lowtarif[1:new_training_length])
+sd_lt = sd(pred_lowtarif[1:new_training_length])
+data_nn = data.frame('resp'=scale(resp[1:new_training_length]) ,'pred'= scale(pred_lowtarif[1:new_training_length]))
+NN_lt = neuralnet(resp~pred,data = data_nn, hidden = 2 , linear.output = T )
+
+plot(NN_lt)
+
+new_data = data.frame('pred_lowtarif'=(test_data$annual_consume_lowtarif_perc[1:new_training_length]-mean_lt)/sd_lt)
+predict_testNN = compute(NN_lt, new_data)
+predict_testNN$net.result = predict_testNN$net.result*sd_resp+mean_resp
+
+test_error=sqrt(mean((predict_testNN$net.result-test_data$annual_consume[1:new_training_length])^2))
+
+predict_trainNN = compute(NN_lt,data_nn)
+predict_trainNN$net.result = predict_trainNN$net.result*sd_resp+mean_resp
+train_error = sqrt(mean((predict_trainNN$net.result-(data_nn$resp*sd_sm+mean_sm))^2))
+print('the ratio of training to test data is ')
+print(test_error/train_error)
+```
+A neural network with 2 layers was fit on the training data containing *5000 samples* from the original training data and predictions were made on *5000 samples* of the original test data. The training and test data were scaled because neural networks are susceptible erroneous fitting to unscaled data. 
+
+The predictions on the test data were made and the ratio of test to training error came out to be less than one. Again, these models were fit on a small sample of the data, hence are not representative. The final model that will be considered for cross validation is the linear model.
+
+
+B Interpretation:
+A) test error 
+>> using smart meter percentage is 
+>> using smartannual consume lowtarif percentage is 
+
+B) ratio of test to train error
+>> using smart meter percentage is
+>> using annual consume lowtarif percentage is
+
+C) R-squared
+>> using smart meter percentage 
+>> using annual consume lowtarif percentage 
+
+
+### Cross‐validation method
+On the best family model, find the best parameters using the cross‐validation method. Compute the CV error rate and compare it with the previous metrics.
+```{r}
+data_cv = data.frame('resp'=resp, 'pred_smartmeter'=pred_smartmeter, 'pred_lowtarif'=pred_lowtarif)
+train.control <- trainControl(method = "cv", number = 10)
+# Train the model
+model <- train(resp ~ pred_smartmeter,data=data_cv, method = "lm", trControl = train.control)
+# Summarize the results
+print(model)
+print(model$modelInfo)
+
+train.control <- trainControl(method = "cv", number = 10)
+
+# Train the model
+model_lt <- train(resp ~ pred_lowtarif, data=data_cv,method = "lm", trControl = train.control)
+# Summarize the results
+print(model_lt)
+print(model_lt$finalModel)
+```
+
+On the best family model, find the best parameters using the cross‐validation method. Compute the CV error rate and compare it with the previous metrics.
+
+01.03.04.B Interpretation: Ten-fold cross validation was carried on the data with y being electricity consumption and the predictor being smart meter percentage. The R-Squared value and the RMSE value are almost unchanged. The CV error rate is 3584.778. The coefficient of pred_smartmeter doesn't change at all between the cross validated model and the model built on 30% of the training data in the beginning. 
+
+Similarly, ten-fold cross validation was carried out using electricity consumption as the y-variable and low tariff electricity as the x-variable. The RMSE is since the model was developed. The R-squared is 0.67% which is not significant at all. The final coefficients of the model are also the same. Therefore the previous model was optimal.
+
+
+# Part 2 #######################################
+Define two thresholds for electricity efficiency and gas usage and predict validation set and compute confusion matrix.
+
+## Define two thresholds for electricity efficiency and gas usage
+```{r}
+data_electricity = df%>% filter(fuel=='electricity')
+data_gas = df%>% filter(fuel=='gas')
+colnames(data_gas)
+all_data = data_electricity%>% left_join(data_gas,by=c('street', 'zipcode_from', 'zipcode_to', 'city','year'))
+colnames(all_data) = gsub('[.]x','_electricity',colnames(all_data))
+colnames(all_data) = gsub('[.]y','_gas',colnames(all_data))
+all_data = all_data%>% filter(!is.na(annual_consume_electricity))%>%filter(!is.na(annual_consume_gas))%>% filter(!is.na(smartmeter_perc_gas))%>% filter(!is.na(smartmeter_perc_electricity))%>% filter(!is.na(annual_consume_lowtarif_perc_electricity))%>% filter(!is.na(annual_consume_lowtarif_perc_gas))%>%filter(!is.na(provider_electricity))%>%filter(!is.na(provider_gas))
+
+# threshold 1
+mean_elec = mean(data_electricity$annual_consume,na.rm=T)
+# threshold 2
+mean_gas = mean(data_gas$annual_consume,na.rm=T)
+
+all_data$EFFICIENCY = ifelse(all_data$annual_consume_electricity<mean_elec,ifelse(all_data$annual_consume_gas<mean_gas,'GREEN_BOTH','GREEN_ELET'), ifelse(all_data$annual_consume_gas<mean_gas,'GREEN_GAS','RED'))
+
+all_data$EFFICIENCY = factor(all_data$EFFICIENCY)
+```
+02.01.A Justification: The data of electricity consumption was merged with data of gas consumption using the variables 'street', 'zipcode_from', 'zipcode_to', 'city' and 'year'. The rows where annual gas consumption or electricity consumption, smart meter percentage or low tariff electiricty for gas or electricity is missing were removed from the analysis. The variable 'EFFICIENCY' was calculated by checking if the point of sale had lower than average gas or electricity consumption. Specifically:
+o	GREEN_BOTH when both the consumptions are under the defined thresholds
+o	GREEN_ELET when only the electricity consumption is under the threshold
+o	GREEN_GAS when only the gas consumption is under the threshold
+o	RED when both the consumption pass the limit decided.
+
+02.01.B Interpretation: We assumed that the smart meter percentage and low tariff fuel usage percentage were important predictors of efficiency. Therefore, these variables were collected for all the points of sale common in both electricity and gas consumption data. Further training data was created to train the model on. Decision trees and random forest will be tested on the test data and the best final model will be used to create a confusion matrix on the validation data.
+
+### Create train and test set
+The data is split on 70:20:10 basis into training, test and validation data.
+```{r}
+set.seed(4)
+indices = sample(nrow(all_data))
+train_index = indices[1:(round(0.7*length(indices)))]
+test_index = indices[(round(0.7*length(indices))+1):(round(0.9*length(indices)))]
+val_index = indices[(round(0.9*length(indices))+1):length(indices)]
+train_data = all_data[train_index,]
+val_data = all_data[val_index,]
+test_data = all_data[test_index,]
+```
+
+### Random Forest and test error rate
+```{r}
+mod_rf = randomForest(train_data[,c("smartmeter_perc_electricity","smartmeter_perc_gas","annual_consume_lowtarif_perc_electricity","annual_consume_lowtarif_perc_gas")],train_data[,"EFFICIENCY"],ntree=50)
+
+predictions_rf = predict(mod_rf,test_data[,c("smartmeter_perc_electricity","smartmeter_perc_gas", "annual_consume_lowtarif_perc_electricity","annual_consume_lowtarif_perc_gas")], type = 'response')
+
+test_error_rate = sum(test_data[,"EFFICIENCY"]!=predictions_rf)/length(predictions_rf)
+print(paste('test error rate for random forest is ',test_error_rate))
+```
+Justification: Changing the Parameters of randomForest, especially ntree, doesnt improve the model. After 50 ntrees there isn't a improved Test Error rate. Changing mtry (calculating via TuneRF) doesn't improve the model. 
+
+### Decision Tree and test error rate
+```{r}
+mod_decision_tree = tree(EFFICIENCY~smartmeter_perc_electricity+smartmeter_perc_gas+ annual_consume_lowtarif_perc_electricity+ annual_consume_lowtarif_perc_gas,data=train_data)
+
+predictions_dt = predict(mod_decision_tree,test_data[,c("smartmeter_perc_electricity","smartmeter_perc_gas", "annual_consume_lowtarif_perc_electricity","annual_consume_lowtarif_perc_gas")],type='class')
+
+predictions_dt = c("GREEN_BOTH", "GREEN_ELET", "GREEN_GAS", "RED")[max.col(predictions_dt)]
+
+test_eror_rate_dt = sum(test_data[,"EFFICIENCY"]!=predictions_dt)/length(predictions_dt)
+
+print(paste('test error rate for decision tree is ',test_eror_rate_dt))
+
+plot(mod_decision_tree)
+text(mod_decision_tree, pretty=1, cex=0.75)
+```
+
+>> Plot tree to be added!
+
+Random forest model and decision tree model were fit on the data with Efficiency as the Y-variable and variables like "smartmeter_perc_electricity", "smartmeter_perc_gas", "annual_consume_lowtarif_perc_electricity" and "annual_consume_lowtarif_perc_gas" as the predictors. 
+The number of trees in random forest was chosen to be 50. The models were fit on the training data and test error was calculated using predictions on the test data. 
+Test error rate for random forest is 0.358 while for decision tree is 0.375. Therefore, we use random forest to calculate the confusion matrix on the validation data.
+
+### Compute confusion matrix
+```{r}
+print('Confusion matrix on the validation set as generated by random forest is ')
+predictions_rf_val = predict(mod_rf,val_data[,c("smartmeter_perc_electricity","smartmeter_perc_gas", "annual_consume_lowtarif_perc_electricity","annual_consume_lowtarif_perc_gas")], type = 'response')
+
+table(val_data[,"EFFICIENCY"],predictions_rf_val)
+```
+
+Since the test error rate for random forest was lesser, it was used to create confusion matrix on the validation data. The accuracy on the test data is 63%. The confusion matrix on the validation data shows that the label 'GREEN_BOTH' is very accurately identified as 'GREEN_BOTH' whereas 'RED' is the most misclassified one.
