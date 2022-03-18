@@ -1,8 +1,11 @@
 # Collection of recommended Data Science Tutorials
 
-## Statistics
+## Literature
 * [An Introduction to Statistical Learning](https://www.statlearning.com/)
 * [The Elements of Statistical Learning](https://hastie.su.domains/ElemStatLearn/)
+* [All of Statistics](https://egrcc.github.io/docs/math/all-of-statistics.pdf)
+* [All of Nonparametric Statistics](https://www.stat.cmu.edu/~larry/all-of-nonpar/contents.pdf)
+* [A ModernDive into R and the Tidyverse](https://moderndive.com/)
 
 ## Introduction to Machine Learning
 * Making Friends with Machine Learning (Cassie Kozyrkov)
